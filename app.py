@@ -34,9 +34,22 @@ status = load_csv("status.csv")
 required = {"results.csv": results, "races.csv": races, "drivers.csv": drivers, "constructors.csv": constructors}
 missing = [n for n, df in required.items() if df.empty]
 if missing:
-    st.warning("Dataset not found yet. Run `python download_data.py` as described in README.md, then refresh this page.")
-    st.markdown("The project uses the public Formula 1 CSV archive from [TracingInsights/RaceData](https://github.com/TracingInsights/RaceData).")
-    st.stop()
+    st.info("Downloading Formula 1 dataset...")
+    import subprocess
+    import sys
+
+    result = subprocess.run(
+        [sys.executable, "download_data.py"],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode != 0:
+        st.error("Dataset download failed.")
+        st.code(result.stderr or result.stdout)
+        st.stop()
+
+    st.rerun()
 
 for df in [results, races, drivers, constructors, circuits, status]:
     if not df.empty:
